@@ -225,7 +225,7 @@ const processDreamAnalysis = async (dreamId) => {
           content: JSON.stringify(createAnalysisPrompt(rawDream)),
         },
       ],
-      model: "deepseek/deepseek-chat:free",
+      model: "deepseek/deepseek-r1:free",
       response_format: { type: "json_object" }, // Enforce JSON in capable models
     });
 

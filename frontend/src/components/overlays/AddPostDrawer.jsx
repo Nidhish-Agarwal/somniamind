@@ -263,10 +263,10 @@ const AddPostDrawer = () => {
 
     if (!caption.trim()) {
       newErrors.caption = "Caption is required.";
-    } else if (caption.trim().length < 10) {
-      newErrors.caption = "Caption must be at least 10 characters.";
-    } else if (caption.trim().length > 300) {
-      newErrors.caption = "Caption must be less than 300 characters.";
+    } else if (caption.trim().split(/\s+/).length < 10) {
+      newErrors.caption = "Caption must be at least 10 words.";
+    } else if (caption.trim().split(/\s+/).length > 120) {
+      newErrors.caption = "Caption must be less than 120 words.";
     }
 
     hashtags.forEach((tag) => {

@@ -690,6 +690,71 @@ const googleLogin = async (req, res) => {
       await user.save();
     }
 
+    // 3. Check if refresh token cookie exists
+    const existingToken = req.cookies?.jwt;
+    if (existingToken) {
+      try {
+        const decoded = jwt.verify(
+          existingToken,
+          process.env.REFRESH_TOKEN_SECRET
+        );
+
+        if (decoded.userId === user._id.toString()) {
+          const sessionExists = user.sessions.some(
+            (session) => session.refreshToken === existingToken
+          );
+
+          if (sessionExists) {
+            const accessToken = jwt.sign(
+              { userId: user._id, roles: user.roles },
+              process.env.ACCESS_TOKEN_SECRET,
+              { expiresIn: "15m" }
+            );
+
+            return res.status(200).json({
+              message: "Already logged in. Access token refreshed.",
+              roles: user.roles,
+              _id: user._id,
+              accessToken,
+            });
+          } else {
+            // Token valid but session missing — treat as stale
+            res.clearCookie("jwt", {
+              httpOnly: true,
+              sameSite: "None",
+              secure: true,
+            });
+            console.warn(
+              "Valid refresh token but session not found. Clearing cookie."
+            );
+          }
+        } else {
+          // Token mismatch with user
+          res.clearCookie("jwt", {
+            httpOnly: true,
+            sameSite: "None",
+            secure: true,
+          });
+
+          const previousUser = await User.findById(decoded.userId);
+          if (previousUser) {
+            previousUser.sessions = previousUser.sessions.filter(
+              (s) => s.refreshToken !== existingToken
+            );
+            await previousUser.save();
+          }
+
+          console.warn(
+            "Refresh token user mismatch during login. Cookie cleared."
+          );
+        }
+      } catch (err) {
+        console.warn(
+          "Invalid or expired refresh token in login. Continuing fresh login."
+        );
+      }
+    }
+
     // 4. Generate tokens
     const accessToken = jwt.sign(
       { userId: user._id, roles: user.roles },

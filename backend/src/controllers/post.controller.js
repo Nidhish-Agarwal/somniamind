@@ -29,12 +29,13 @@ const createCommunityPost = async (req, res) => {
         .json({ message: "Hashtags must be an array of strings." });
     }
 
-    // Validate caption length
-    if (caption && caption.length > 500) {
+    // Validate caption word count
+    if (caption && caption.trim().split(/\s+/).length > 120) {
       return res
         .status(400)
-        .json({ message: "Caption must be under 500 characters." });
+        .json({ message: "Caption must be under 120 words." });
     }
+
     if (title && title.length > 30) {
       return res
         .status(400)
