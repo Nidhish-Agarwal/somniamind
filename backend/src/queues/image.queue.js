@@ -44,6 +44,10 @@ const processImageJob = async (
 
     const imageUrl = await generateGeminiImageAndUpload(prompt);
 
+    if (imageUrl.success === false) {
+      throw new Error(imageUrl.error || "Unknown error during image upload");
+    }
+
     await ProcessedDream.findByIdAndUpdate(dreamId, {
       $set: {
         image_status: "completed",
