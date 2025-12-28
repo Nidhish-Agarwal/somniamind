@@ -1,11 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from "react";
-import {
-  ChevronDown,
-  MessageSquare,
-  X,
-  ChevronUp,
-  ThumbsDown,
-} from "lucide-react";
+import { ChevronDown, MessageSquare, X, ChevronUp } from "lucide-react";
 import SortIcon from "../icons/Sort_Icon";
 import { AnimatePresence, motion } from "framer-motion";
 import BookmarkIcon from "../icons/BookmarkIcon";
@@ -16,6 +10,7 @@ import { format } from "date-fns";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
+import { trackEvent } from "../../analytics/ga";
 
 const Post = ({
   post,
@@ -61,6 +56,14 @@ const Post = ({
   const [replyingTo, setReplyingTo] = useState(null);
   const axiosPrivate = useAxiosPrivate();
 
+  useEffect(() => {
+    trackEvent("Engagement", {
+      source: "Community",
+      event: "Viewed Post",
+      postId: postId,
+    });
+  }, [postId]);
+
   // Fetch comments with infinite scroll
   useEffect(() => {
     const fetchComments = async () => {
@@ -69,8 +72,6 @@ const Post = ({
         const response = await axiosPrivate.get(
           `/community/${postId}/comments?page=${commentPage}&limit=10&sort=${currentSort.toLowerCase()}`
         );
-
-        console.log(response.data.comments);
 
         if (commentPage === 1) {
           setComments(response.data.comments);

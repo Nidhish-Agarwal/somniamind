@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import { useRef, useState } from "react";
 import {
   Card,
   CardHeader,
@@ -41,6 +41,7 @@ import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import useAuth from "../../hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import ROLES_LIST from "../../utils/roles";
 
 const CommentItem = ({
   comment,
@@ -53,7 +54,11 @@ const CommentItem = ({
   updateCommentCount,
 }) => {
   const auth = useAuth();
-  const isOwner = auth.auth.userId === comment.user._id;
+  const isOwner = comment.user._id === auth.auth.userId;
+  const isAdmin = auth.auth?.roles?.includes(ROLES_LIST.Admin);
+
+  const canEdit = isOwner;
+  const canDelete = isOwner || isAdmin;
 
   const [likedByUser, setLikedByUser] = useState(
     comment.likes.includes(auth.auth.userId)
@@ -227,50 +232,58 @@ const CommentItem = ({
           </HoverCardContent>
         </HoverCard>
 
-        {isOwner && (
+        {(canEdit || canDelete) && (
           <div className="ml-auto flex gap-1">
             <TooltipProvider>
+              {canEdit && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7"
+                      onClick={() => setIsEditing(true)}
+                    >
+                      <Pencil className="w-4 h-4 text-muted-foreground" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Edit</TooltipContent>
+                </Tooltip>
+              )}
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7"
-                    onClick={() => setIsEditing(true)}
-                  >
-                    <Pencil className="w-4 h-4 text-muted-foreground" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Edit</TooltipContent>
-              </Tooltip>
-
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-7 w-7">
-                        <Trash2 className="w-4 h-4 text-destructive" />
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <div className="flex flex-col gap-4">
-                        <h2 className="text-lg font-semibold">
-                          Confirm Delete
-                        </h2>
-                        <p className="text-sm text-muted-foreground">
-                          Are you sure you want to delete this comment?
-                        </p>
-                        <div className="flex justify-end gap-2">
-                          <DialogClose asChild>
-                            <Button variant="ghost">Cancel</Button>
-                          </DialogClose>
-                          <Button variant="destructive" onClick={handleDelete}>
-                            Delete
-                          </Button>
+                  {canDelete && (
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-7 w-7">
+                          <Trash2 className="w-4 h-4 text-destructive" />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <div className="flex flex-col gap-4">
+                          <h2 className="text-lg font-semibold">
+                            Confirm Delete
+                          </h2>
+                          <p className="text-sm text-muted-foreground">
+                            {isAdmin && !isOwner
+                              ? "This comment will be removed for community moderation."
+                              : "Are you sure you want to delete this comment? This action cannot be undone."}
+                          </p>
+                          <div className="flex justify-end gap-2">
+                            <DialogClose asChild>
+                              <Button variant="ghost">Cancel</Button>
+                            </DialogClose>
+                            <Button
+                              variant="destructive"
+                              onClick={handleDelete}
+                            >
+                              Delete
+                            </Button>
+                          </div>
                         </div>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
+                      </DialogContent>
+                    </Dialog>
+                  )}
                 </TooltipTrigger>
                 <TooltipContent>Delete</TooltipContent>
               </Tooltip>

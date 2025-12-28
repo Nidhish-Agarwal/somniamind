@@ -3,11 +3,29 @@ import useRefreshToken from "../hooks/useRefreshToken";
 import useAuth from "../hooks/useAuth";
 import { Outlet } from "react-router-dom";
 import LoadingScreen from "../Pages/LoadingScreen";
+import { setGA } from "../analytics/ga";
 
 function PersistLogin() {
   const [isLoading, setIsLoading] = useState(true);
   const refresh = useRefreshToken();
   const { auth, persist } = useAuth();
+
+  useEffect(() => {
+    if (!isLoading) {
+      if (auth?.user) {
+        setGA({
+          user_id: auth.userId, // ideally hashed
+          plan: "free",
+          role: auth.roles,
+        });
+      } else {
+        setGA({
+          user_id: null,
+          plan: "guest",
+        });
+      }
+    }
+  }, [isLoading, auth]);
 
   useEffect(() => {
     let isMounted = true;

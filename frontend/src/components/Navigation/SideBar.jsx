@@ -75,7 +75,7 @@ export default function SideBar({ currentPath }) {
   const handleLogout = async () => {
     setIsOpen(false);
     await logout();
-    navigate("/");
+    window.location.href = "/";
   };
 
   return (

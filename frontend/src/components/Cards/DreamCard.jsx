@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import DreamDetailsOverlay from "../overlays/DreamDetailOverlay";
 import { motion } from "framer-motion";
@@ -15,6 +15,7 @@ import {
 import { format } from "date-fns";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import NoImage from "../../assets/No-Image.png";
+import { trackEvent } from "../../analytics/ga";
 
 const DreamCard = ({ dream, onRetry, updateDream }) => {
   const [isRetrying, setIsRetrying] = useState(false);
@@ -44,8 +45,10 @@ const DreamCard = ({ dream, onRetry, updateDream }) => {
     e.stopPropagation();
     setIsRetrying(true);
     try {
+      trackEvent("Dream Analysis", { status: "retrying", dreamId: dream._id });
       await onRetry(dream._id);
     } finally {
+      trackEvent("Dream Analysis", { status: "failed", dreamId: dream._id });
       setIsRetrying(false);
     }
   };
@@ -69,9 +72,13 @@ const DreamCard = ({ dream, onRetry, updateDream }) => {
   const handleRetryImage = async (dreamId) => {
     setIsRetryingImage(true);
     try {
-      console.log(dreamId);
+      trackEvent("Image Generation", {
+        status: "retrying",
+        dreamId: dream._id,
+      });
       await axiosPrivate.post(`/dream/retry-image/${dreamId}`);
     } finally {
+      trackEvent("Image Generation", { status: "Failed", dreamId: dream._id });
       setIsRetryingImage(false);
     }
   };

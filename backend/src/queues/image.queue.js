@@ -2,6 +2,7 @@ const ProcessedDream = require("../models/processedDream.model.js");
 const {
   generateGeminiImageAndUpload,
 } = require("../services/image.service.js");
+const { generateShareImageUrl } = require("../services/share-image.service.js");
 const { emitProcessedDreamUpdate } = require("../utils/socketHelper.js");
 
 let PQueue;
@@ -29,7 +30,11 @@ const processImageJob = async (
     const updatedDream = await ProcessedDream.findByIdAndUpdate(
       dreamId,
       update,
-      { new: true, fields: { image_retry_count: 1 } }
+      {
+        new: true,
+        select:
+          "share_title share_one_liner share_image_theme image_retry_count",
+      }
     );
 
     try {
@@ -42,17 +47,29 @@ const processImageJob = async (
       console.error("failed to emit dream image update", er.message);
     }
 
-    const imageUrl = await generateGeminiImageAndUpload(prompt);
+    console.log(`Starting image generation for ${dreamId}, attempt ${attempt}`);
+
+    const imageUrl = await generateGeminiImageAndUpload(prompt, dreamId);
+
+    console.log("Generated and uploaded image:", imageUrl);
 
     if (imageUrl.success === false) {
       throw new Error(imageUrl.error || "Unknown error during image upload");
     }
+
+    const share_image_url = generateShareImageUrl({
+      publicId: imageUrl.publicId,
+      share_title: updatedDream.share_title,
+      share_one_liner: updatedDream.share_one_liner,
+      theme: updatedDream.share_image_theme,
+    });
 
     await ProcessedDream.findByIdAndUpdate(dreamId, {
       $set: {
         image_status: "completed",
         image_url: imageUrl?.imageUrl,
         image_is_retrying: false,
+        share_image_url,
       },
       $push: {
         image_generation_attempts: { status: "success", timestamp: new Date() },
@@ -62,6 +79,7 @@ const processImageJob = async (
       emitProcessedDreamUpdate(userId, dreamId, {
         image_status: "completed",
         image_url: imageUrl?.imageUrl,
+        share_image_url,
         image_is_retrying: false,
       });
     } catch (er) {

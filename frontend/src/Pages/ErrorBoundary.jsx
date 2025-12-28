@@ -26,6 +26,7 @@ import * as Sentry from "@sentry/react";
 
 import { useNavigate } from "react-router-dom";
 import { initSentry } from "../utils/sentry";
+import { trackEvent } from "../analytics/ga";
 
 const ERROR_TYPES = {
   CHUNK_LOAD_ERROR: "ChunkLoadError",
@@ -150,6 +151,16 @@ const ErrorFallback = ({ error, errorInfo, resetError, errorId }) => {
   const [isReporting, setIsReporting] = useState(false);
   const [hasReported, setHasReported] = useState(false);
   const [userComment, setUserComment] = useState("");
+
+  useEffect(() => {
+    trackEvent("Error", {
+      context: "App Crashed",
+      error,
+      errorInfo,
+    });
+
+    trackEvent("Error", "App Crashed");
+  });
 
   if (!error) {
     return (

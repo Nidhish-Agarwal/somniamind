@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import { Heart, Bug, Lightbulb, Loader } from "lucide-react";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
+import { trackEvent } from "../../analytics/ga";
 
 export default function FeedbackSection() {
   const [feedbackType, setFeedbackType] = useState("bug");
@@ -24,7 +25,9 @@ export default function FeedbackSection() {
         feedbackType,
         message,
       });
-
+      trackEvent("Feedback", {
+        event: "Feedback Given",
+      });
       toast.success("✨ Thank you for your feedback!");
       setMessage("");
     } catch (er) {

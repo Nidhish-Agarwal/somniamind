@@ -40,7 +40,6 @@ export default function CommentInput({ postId, onCommentAdded }) {
         const response = await axiosPrivate.get("/user/get_user_data", {
           signal: controller.signal,
         });
-        // console.log(response.data);
         isMounted && setUser(response.data.user);
       } catch (err) {
         // console.error(err);
@@ -77,7 +76,6 @@ export default function CommentInput({ postId, onCommentAdded }) {
       onCommentAdded(newComment);
 
       setSuccess(true);
-      console.log("success");
       setTimeout(() => setSuccess(false), 1500);
 
       toast.success("Comment added! 🎉", {

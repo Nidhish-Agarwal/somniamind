@@ -1,8 +1,8 @@
-# DreamForge - A Dream Visualization & Analysis Platform
+# SomniaMind - A Dream Visualization & Analysis Platform
 
 ## 🚀 Overview
 
-DreamForge is an innovative platform designed to help users capture, analyze, and visualize their dreams. By leveraging AI and data visualization, it enables users to gain deeper insights into their subconscious thoughts and mental health.
+SomniaMind is an innovative platform designed to help users capture, analyze, and visualize their dreams. By leveraging AI and data visualization, it enables users to gain deeper insights into their subconscious thoughts and mental health.
 
 Additionally, the platform groups similar dreams together through unsupervised clustering to reveal deeper patterns and trends over time.
 
@@ -150,7 +150,7 @@ Additionally, the platform groups similar dreams together through unsupervised c
 
 ## Conclusion
 
-DreamForge is designed to bridge the gap between subjective dream experiences and actionable insights, making it easier for users to understand and reflect on their subconscious. By combining basic/advanced input options, robust AI analysis, and interactive visualizations, the platform offers both casual users and power users a unique window into the world of dreams. The capstone journey is carefully planned to build the project step-by-step, ensuring a well-rounded and robust final product.
+SomniaMind is designed to bridge the gap between subjective dream experiences and actionable insights, making it easier for users to understand and reflect on their subconscious. By combining basic/advanced input options, robust AI analysis, and interactive visualizations, the platform offers both casual users and power users a unique window into the world of dreams. The capstone journey is carefully planned to build the project step-by-step, ensuring a well-rounded and robust final product.
 
 ---
 

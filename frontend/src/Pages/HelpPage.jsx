@@ -1,6 +1,5 @@
 import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
 import faqSections from "../data/faqData.json";
 import DreamPersonalityTypes from "../data/DreamPersonalityTypes.json";
 import HelpAccordion from "../components/widgets/HelpAccordion";

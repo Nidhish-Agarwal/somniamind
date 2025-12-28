@@ -88,7 +88,49 @@ const processedDreamSchema = new mongoose.Schema(
       trim: true,
     },
 
+    // ---------------------------
+    // ⭐ NEW SHARE FIELDS ⭐
+    // ---------------------------
+
+    share_title: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    share_one_liner: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    share_tags: {
+      type: [String],
+      default: [],
+    },
+
+    share_captions: {
+      instagram: { type: String, default: "" },
+      whatsapp: { type: String, default: "" },
+      twitter: { type: String, default: "" },
+      telegram: { type: String, default: "" },
+      pinterest: { type: String, default: "" },
+      generic: { type: String, default: "" },
+    },
+
+    share_image_theme: {
+      primary: { type: String, default: "#000000" },
+      secondary: { type: String, default: "#000000" },
+      text: { type: String, default: "#FFFFFF" },
+      overlay: { type: String, default: "rgba(0,0,0,0.4)" },
+    },
+
+    share_image_url: { type: String, default: "" },
+
+    // ---------------------------
     // Image generation related
+    // ---------------------------
+
     image_status: {
       type: String,
       enum: ["pending", "processing", "completed", "failed"],

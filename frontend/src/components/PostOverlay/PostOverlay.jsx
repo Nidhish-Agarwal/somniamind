@@ -28,6 +28,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MessageSquare, ArrowRight, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import DreamPersonalityTypes from "../../data/DreamPersonalityTypes.json";
+import ROLES_LIST from "../../utils/roles";
 
 const formatDistanceToNow = (date) => {
   const now = new Date();
@@ -75,6 +76,11 @@ export default function PostOverlay({
   );
 
   const isOwner = post.user._id === auth.auth.userId;
+  const isAdmin = auth.auth?.roles?.includes(ROLES_LIST.Admin);
+
+  const canEdit = isOwner;
+  const canDelete = isOwner || isAdmin;
+
   const [isEditing, setIsEditing] = useState(false);
   const [editedText, setEditedText] = useState(post.caption);
   const [openOverlay, setOpenOverlay] = useState(false);
@@ -168,71 +174,76 @@ export default function PostOverlay({
                     </div>
                   </div>
 
-                  {isOwner && (
+                  {(canEdit || canDelete) && (
                     <div className="flex items-center gap-1">
                       <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 lg:h-9 lg:w-9 hover:bg-gray-100 dark:hover:bg-zinc-800"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setIsEditing(true);
-                              }}
-                            >
-                              <Pencil className="w-4 h-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>Edit</TooltipContent>
-                        </Tooltip>
-
-                        <Dialog>
+                        {canEdit && (
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <DialogTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8 lg:h-9 lg:w-9 hover:bg-red-50 dark:hover:bg-red-950/20"
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  <Trash2 className="w-4 h-4 text-red-500" />
-                                </Button>
-                              </DialogTrigger>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 lg:h-9 lg:w-9 hover:bg-gray-100 dark:hover:bg-zinc-800"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setIsEditing(true);
+                                }}
+                              >
+                                <Pencil className="w-4 h-4" />
+                              </Button>
                             </TooltipTrigger>
-                            <TooltipContent>Delete</TooltipContent>
+                            <TooltipContent>Edit</TooltipContent>
                           </Tooltip>
+                        )}
 
-                          <DialogContent
-                            onClick={(e) => e.stopPropagation()}
-                            className="rounded-2xl"
-                          >
-                            <div className="flex flex-col gap-4 py-2">
-                              <DialogTitle className="text-lg font-semibold">
-                                Delete Post?
-                              </DialogTitle>
-                              <DialogDescription className="text-gray-600 dark:text-gray-400">
-                                This action cannot be undone. Your post will be
-                                permanently deleted.
-                              </DialogDescription>
-                              <div className="flex justify-end gap-3">
-                                <DialogClose asChild>
-                                  <Button variant="ghost">Cancel</Button>
-                                </DialogClose>
-                                <DialogClose asChild>
+                        {canDelete && (
+                          <Dialog>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <DialogTrigger asChild>
                                   <Button
-                                    variant="destructive"
-                                    onClick={handleDelete}
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 lg:h-9 lg:w-9 hover:bg-red-50 dark:hover:bg-red-950/20"
+                                    onClick={(e) => e.stopPropagation()}
                                   >
-                                    Delete
+                                    <Trash2 className="w-4 h-4 text-red-500" />
                                   </Button>
-                                </DialogClose>
+                                </DialogTrigger>
+                              </TooltipTrigger>
+                              <TooltipContent>Delete</TooltipContent>
+                            </Tooltip>
+
+                            <DialogContent
+                              onClick={(e) => e.stopPropagation()}
+                              className="rounded-2xl"
+                            >
+                              <div className="flex flex-col gap-4 py-2">
+                                <DialogTitle className="text-lg font-semibold">
+                                  Delete Post?
+                                </DialogTitle>
+                                <DialogDescription className="text-gray-600 dark:text-gray-400">
+                                  {isAdmin && !isOwner
+                                    ? "This post will be removed for community moderation."
+                                    : "Are you sure you want to delete this post? This action cannot be undone."}
+                                </DialogDescription>
+                                <div className="flex justify-end gap-3">
+                                  <DialogClose asChild>
+                                    <Button variant="ghost">Cancel</Button>
+                                  </DialogClose>
+                                  <DialogClose asChild>
+                                    <Button
+                                      variant="destructive"
+                                      onClick={handleDelete}
+                                    >
+                                      Delete
+                                    </Button>
+                                  </DialogClose>
+                                </div>
                               </div>
-                            </div>
-                          </DialogContent>
-                        </Dialog>
+                            </DialogContent>
+                          </Dialog>
+                        )}
                       </TooltipProvider>
                     </div>
                   )}

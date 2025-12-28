@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { trackEvent } from "../analytics/ga";
 
 export default function NotFound() {
-  const navigate = useNavigate();
   const [dreamPhase, setDreamPhase] = useState(0);
 
   useEffect(() => {
@@ -11,6 +10,13 @@ export default function NotFound() {
     }, 4000);
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    trackEvent("Security", {
+      context: "Not Found",
+      location: window.location,
+    });
+  });
 
   const dreamMessages = [
     "This page exists only in dreams...",
@@ -116,9 +122,13 @@ export default function NotFound() {
 
         {/* Dreamy action buttons */}
         <div className="space-y-3 mb-8">
-          <button
+          <a
             className="w-full bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-500/90 hover:to-indigo-500/90 text-white font-light py-3 px-6 rounded-2xl transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-purple-500/30 flex items-center justify-center gap-2 backdrop-blur-sm border border-white/20"
-            onClick={() => navigate(-1)}
+            to="#"
+            onClick={(e) => {
+              e.preventDefault();
+              window.history.back();
+            }}
           >
             <svg
               className="w-4 h-4"
@@ -134,10 +144,10 @@ export default function NotFound() {
               />
             </svg>
             Return to Previous Page
-          </button>
+          </a>
 
-          <button
-            onClick={() => navigate("/")}
+          <a
+            href="/"
             className="w-full bg-gradient-to-r from-pink-600/60 to-purple-600/60 hover:from-pink-500/70 hover:to-purple-500/70 text-white font-light py-3 px-6 rounded-2xl transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-pink-500/30 flex items-center justify-center gap-2 backdrop-blur-sm border border-white/20"
           >
             <svg
@@ -154,7 +164,7 @@ export default function NotFound() {
               />
             </svg>
             Wake Up to Home
-          </button>
+          </a>
         </div>
 
         {/* Mystical error code */}

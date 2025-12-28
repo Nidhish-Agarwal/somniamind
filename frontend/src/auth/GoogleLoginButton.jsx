@@ -6,6 +6,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 
 import axios from "../api/axios";
 import useAuth from "../hooks/useAuth";
+import { trackEvent } from "../analytics/ga";
 function GoogleLoginButton({ setLoading, setErrorMessage }) {
   const { setAuth } = useAuth();
   const navigate = useNavigate();
@@ -15,6 +16,12 @@ function GoogleLoginButton({ setLoading, setErrorMessage }) {
   const handleGoogleLogin = async (credentialResponse) => {
     setLoading(true);
     try {
+      trackEvent("login_attempt", {
+        method: "google",
+        status: "processing",
+        context: "auth",
+      });
+
       const res = await axios.post(
         "/auth/google-login",
         {
@@ -24,6 +31,11 @@ function GoogleLoginButton({ setLoading, setErrorMessage }) {
           withCredentials: true,
         }
       );
+      trackEvent("login_attempt", {
+        method: "google",
+        status: "success",
+        context: "auth",
+      });
 
       // Store tokens in state or secure storage
       const accessToken = res.data?.accessToken;
@@ -39,6 +51,11 @@ function GoogleLoginButton({ setLoading, setErrorMessage }) {
       toast.success("🎉 Logged in with Google!");
       navigate(from, { replace: true });
     } catch (err) {
+      trackEvent("login_attempt", {
+        method: "google",
+        status: "failed",
+        context: "auth",
+      });
       setErrorMessage(err.response?.data?.message || "Google login failed");
       toast.error(err.response?.data?.message || "Google login failed");
     } finally {

@@ -10,6 +10,7 @@ import UserStatsGrid from "../components/Profile/UserStatsGrid";
 import AccountSettings from "../components/Profile/AccountSettings";
 import useLogout from "../hooks/useLogout";
 import { useNavigate } from "react-router-dom";
+import { trackEvent } from "../analytics/ga";
 
 // Main Profile Page Component
 const ProfilePage = () => {
@@ -49,6 +50,10 @@ const ProfilePage = () => {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
+      trackEvent("Profile", {
+        context: "Updated",
+      });
+
       setUser(response.data.user);
       toast.success("Profile updated successfully!");
     } catch (error) {
@@ -67,6 +72,9 @@ const ProfilePage = () => {
         "/auth/change-password",
         passwordData
       );
+      trackEvent("Profile", {
+        context: "Password Changed",
+      });
 
       toast.success("Password changed successfully!");
     } catch (error) {
@@ -82,7 +90,7 @@ const ProfilePage = () => {
     setIsUpdating(true);
     try {
       await logout();
-      navigate("/");
+      window.location.href = "/";
     } catch (error) {
       console.error("Error logging out:", error);
       toast.error("Failed to logout");

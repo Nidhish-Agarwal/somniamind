@@ -22,7 +22,9 @@ function useDreamSocket(setDreams) {
         }
       }
 
-      socketRef.current = io(import.meta.env.VITE_API_URL, {
+      const PUBLIC_URL = window.location.origin;
+
+      socketRef.current = io(PUBLIC_URL, {
         auth: { token },
         withCredentials: true,
         reconnectionAttempts: 3,
@@ -50,7 +52,6 @@ function useDreamSocket(setDreams) {
       });
 
       socketRef.current.on("processed-dream-updated", (processedUpdate) => {
-        console.log("received socket update", processedUpdate);
         setDreams((prev) =>
           prev.map((d) => {
             if (d.analysis?._id !== processedUpdate._id) return d;

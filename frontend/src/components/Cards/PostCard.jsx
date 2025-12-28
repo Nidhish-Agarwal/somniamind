@@ -42,12 +42,14 @@ import {
 } from "lucide-react";
 import HeartIcon from "../icons/HeartIcon";
 import BookmarkIcon from "../icons/BookmarkIcon";
-import { format, formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow } from "date-fns";
 import useAuth from "../../hooks/useAuth";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import NoImage from "../../assets/No-Image.png";
 import PostOverlay from "../PostOverlay/PostOverlay";
 import DreamPersonalityTypes from "../../data/DreamPersonalityTypes.json";
+import { trackEvent } from "../../analytics/ga";
+import ROLES_LIST from "../../utils/roles";
 
 const PostCard = ({ post, updatePost, onDelete }) => {
   const { user, caption, createdAt, title } = post;
@@ -56,7 +58,12 @@ const PostCard = ({ post, updatePost, onDelete }) => {
   const axiosPrivate = useAxiosPrivate();
   const liked = post.likes.includes(auth.auth.userId);
   const bookmarked = post.bookmarks.includes(auth.auth.userId);
+
   const isOwner = post.user._id === auth.auth.userId;
+  const isAdmin = auth.auth?.roles?.includes(ROLES_LIST.Admin);
+
+  const canEdit = isOwner;
+  const canDelete = isOwner || isAdmin;
 
   const [isEditing, setIsEditing] = useState(false);
   const [editedText, setEditedText] = useState(post.caption);
@@ -104,6 +111,12 @@ const PostCard = ({ post, updatePost, onDelete }) => {
       };
       updatePost(updated);
 
+      trackEvent("Engagement", {
+        source: "Community",
+        event: response.data.liked ? "Post Liked" : "Post Disliked",
+        postId: post._id,
+      });
+
       if (response.data.liked) {
         toast.success("Post liked! ❤️");
       }
@@ -124,6 +137,13 @@ const PostCard = ({ post, updatePost, onDelete }) => {
         bookmarkCount: response.data.bookmarkCount,
       };
       updatePost(updated);
+      trackEvent("Engagement", {
+        source: "Community",
+        event: response.data.bookmarked
+          ? "Post Bookmarked"
+          : "Removed post bookmark",
+        postId: post._id,
+      });
 
       if (response.data.bookmarked) {
         toast.success("Post bookmarked! 📌");
@@ -152,6 +172,11 @@ const PostCard = ({ post, updatePost, onDelete }) => {
         isEdited: true,
       };
       updatePost(updatedPost);
+      trackEvent("Post", {
+        source: "Community",
+        event: "Post Edited",
+        postId: post._id,
+      });
       toast.success("Post updated successfully! ✨");
       setIsEditing(false);
     } catch (err) {
@@ -164,6 +189,11 @@ const PostCard = ({ post, updatePost, onDelete }) => {
     try {
       await axiosPrivate.delete(`/community/post/${post._id}`);
       onDelete(post._id);
+      trackEvent("Post", {
+        source: "Community",
+        event: "Post Deleted",
+        postId: post._id,
+      });
       toast.success("Post deleted successfully");
     } catch (err) {
       toast.error("Failed to delete post");
@@ -218,7 +248,7 @@ const PostCard = ({ post, updatePost, onDelete }) => {
             </div>
 
             {/* Options Menu */}
-            {isOwner && (
+            {(canEdit || canDelete) && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -234,40 +264,48 @@ const PostCard = ({ post, updatePost, onDelete }) => {
                   align="end"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <DropdownMenuItem
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setIsEditing(true);
-                    }}
-                  >
-                    <Pencil className="w-4 h-4 mr-2" />
-                    Edit Post
-                  </DropdownMenuItem>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                        <Trash2 className="w-4 h-4 mr-2 text-red-500" />
-                        <span className="text-red-500">Delete Post</span>
-                      </DropdownMenuItem>
-                    </DialogTrigger>
-                    <DialogContent onClick={(e) => e.stopPropagation()}>
-                      <DialogTitle>Delete Post</DialogTitle>
-                      <DialogDescription>
-                        Are you sure you want to delete this post? This action
-                        cannot be undone.
-                      </DialogDescription>
-                      <div className="flex justify-end gap-2 mt-4">
-                        <DialogClose asChild>
-                          <Button variant="outline">Cancel</Button>
-                        </DialogClose>
-                        <DialogClose asChild>
-                          <Button variant="destructive" onClick={handleDelete}>
-                            Delete
-                          </Button>
-                        </DialogClose>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
+                  {canEdit && (
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsEditing(true);
+                      }}
+                    >
+                      <Pencil className="w-4 h-4 mr-2" />
+                      Edit Post
+                    </DropdownMenuItem>
+                  )}
+                  {canDelete && (
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                          <Trash2 className="w-4 h-4 mr-2 text-red-500" />
+                          <span className="text-red-500">Delete Post</span>
+                        </DropdownMenuItem>
+                      </DialogTrigger>
+                      <DialogContent onClick={(e) => e.stopPropagation()}>
+                        <DialogTitle>Delete Post</DialogTitle>
+                        <DialogDescription>
+                          {isAdmin && !isOwner
+                            ? "This post will be removed for community moderation."
+                            : "Are you sure you want to delete this post? This action cannot be undone."}
+                        </DialogDescription>
+                        <div className="flex justify-end gap-2 mt-4">
+                          <DialogClose asChild>
+                            <Button variant="outline">Cancel</Button>
+                          </DialogClose>
+                          <DialogClose asChild>
+                            <Button
+                              variant="destructive"
+                              onClick={handleDelete}
+                            >
+                              Delete
+                            </Button>
+                          </DialogClose>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             )}

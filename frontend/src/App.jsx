@@ -1,6 +1,4 @@
 import "./App.css";
-import SignupForm from "./auth/SignUpForm";
-import LoginForm from "./auth/LoginForm";
 import Unauthorized from "./Pages/Unauthorized";
 import NotFound from "./Pages/NotFound";
 import Dashboard from "./Pages/Dashboard";
@@ -8,7 +6,6 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import PersistLogin from "./components/PersistLogin";
 import RequireAuth from "./components/RequireAuth";
 import MainLayout from "./layouts/MainLayout";
-import LandingPage from "./Pages/LandingPage2";
 import ProfilePage from "./Pages/ProfilePage";
 import MyDreamsPage from "./Pages/MyDreamsPage";
 import { Toaster } from "sonner";
@@ -17,44 +14,27 @@ import AllPostsPage from "./Pages/AllPostsPage";
 import MyPostsPage from "./Pages/MyPostsPage";
 import BookmarksPage from "./Pages/BookmarksPage";
 import HelpPage from "./Pages/HelpPage";
+import ResetPasswordPage from "./Pages/ResetPasswordPage";
 import { SentryErrorBoundary } from "./Pages/ErrorBoundary";
 import ForgotPasswordPage from "./Pages/ForgotPasswordPage";
-import ResetPasswordPage from "./Pages/ResetPasswordPage";
+import { useEffect } from "react";
+import AnalyticsTracker from "./analytics/AnalyticsTracker";
+import { initGA } from "./analytics/ga";
+import LoginForm from "./auth/LoginForm";
+import SignupForm from "./auth/SignUpForm";
+// import DreamLandingPage from "./Pages/LandingPage2";
 
 function App() {
+  useEffect(() => {
+    initGA();
+  }, []);
   return (
     <>
       <SentryErrorBoundary>
         <Routes>
-          <Route
-            path="/"
-            element={
-              <>
-                <Toaster position="bottom-right" richColors />
-                <LandingPage />
-              </>
-            }
-          />
-
-          <Route
-            path="/signup"
-            element={
-              <>
-                <Toaster position="bottom-right" richColors />
-                <SignupForm />
-              </>
-            }
-          />
-          {/* <Route path="/signup" element={<MyForm />} /> */}
-          <Route
-            path="/login"
-            element={
-              <>
-                <Toaster position="bottom-right" richColors />
-                <LoginForm />
-              </>
-            }
-          />
+          {/* <Route path="/" element={<DreamLandingPage />} /> */}
+          <Route path="/login" element={<LoginForm />} />
+          <Route path="/signup" element={<SignupForm />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
           <Route
             path="/forgot-password"
@@ -76,6 +56,7 @@ function App() {
           />
 
           <Route element={<PersistLogin />}>
+            <Route element={<AnalyticsTracker />} />
             <Route element={<RequireAuth allowedRoles={[2001]} />}>
               <Route
                 path="/dashboard"

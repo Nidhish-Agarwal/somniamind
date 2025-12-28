@@ -5,6 +5,14 @@ const { addAnalysisJob } = require("../queues/analysis.queue.js");
 const ProcessedDream = require("../models/processedDream.model.js");
 const { addImageJob } = require("../queues/image.queue.js");
 const { z } = require("zod");
+const {
+  processTeaserDreamAnalysis,
+  processNoRecallReflectionAnalysis,
+} = require("../services/teaser-analysis.service.js");
+const {
+  renderPublicDreamHTML,
+  render404HTML,
+} = require("../renderers/index.js");
 
 const moodLabels = ["Terrified", "Sad", "Neutral", "Happy", "Euphoric"];
 
@@ -200,6 +208,7 @@ const getAllDreams = async (req, res) => {
     if (!req.userId) {
       return res.status(401).json({ error: "Unauthorized: Missing user ID" });
     }
+
     const search = req.query.search?.trim() || "";
     const sortOption = req.query.sort || "newest";
     const likedOnly = req.query.likedOnly === "true";
@@ -624,6 +633,103 @@ const dashboardExplore = async (req, res) => {
   }
 };
 
+const getTeaserAnalysis = async (req, res) => {
+  try {
+    const { mode } = req.body;
+
+    // -------------------- MODE VALIDATION --------------------
+    if (!mode) {
+      return res.status(400).json({
+        message: "mode is required (dream | no_recall)",
+      });
+    }
+
+    // ==================== 💤 DREAM MODE ====================
+    if (mode === "dream") {
+      const { dream_text } = req.body;
+
+      if (!dream_text || dream_text.trim().length === 0) {
+        return res.status(400).json({
+          message: "dream_text is required for dream analysis.",
+        });
+      }
+
+      const analysis = await processTeaserDreamAnalysis(dream_text);
+
+      return res.status(200).json({ analysis });
+    }
+
+    // ==================== 🌑 NO-RECALL MODE ====================
+    if (mode === "no_recall") {
+      const { emotion, clarity, body_state } = req.body;
+
+      // Minimal but strict validation
+      if (!emotion || !clarity || !body_state) {
+        return res.status(400).json({
+          message:
+            "emotion, clarity, and body_state are required for no_recall analysis.",
+        });
+      }
+
+      const analysis = await processNoRecallReflectionAnalysis({
+        emotion,
+        clarity,
+        bodyState: body_state,
+      });
+
+      return res.status(200).json({ analysis });
+    }
+
+    // -------------------- INVALID MODE --------------------
+    return res.status(400).json({
+      message: "Invalid mode. Allowed values: dream, no_recall",
+    });
+  } catch (err) {
+    console.error("Teaser analysis error:", err);
+    return res.status(500).json({
+      message: "Internal server error",
+      error: err.message,
+    });
+  }
+};
+
+const getPublicDream = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    res.set({
+      "Content-Type": "text/html",
+      "Cache-Control": "public, max-age=300, s-maxage=600",
+    });
+
+    // ❌ Invalid ObjectId → 404 HTML
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(404).send(render404HTML());
+    }
+
+    const dream = await RawDream.findById(id);
+    const processedDream = await ProcessedDream.findOne({ dream_id: id });
+
+    // ❌ Dream not found → 404 HTML
+    if (!dream || !processedDream) {
+      return res.status(404).send(render404HTML());
+    }
+
+    // ✅ Valid dream → render public HTML
+    const fullDream = {
+      ...dream.toObject(),
+      analysis: processedDream.toObject(),
+    };
+
+    return res.status(200).send(renderPublicDreamHTML(fullDream));
+  } catch (er) {
+    console.error("Error in public dream route:", er);
+
+    // ❌ Server error → 500 HTML (optional but recommended)
+    return res.status(500).send(render404HTML?.() || "Server error");
+  }
+};
+
 module.exports = {
   addRawDream,
   retryAnalysis,
@@ -634,4 +740,6 @@ module.exports = {
   getDashboardInsights,
   dashboardExplore,
   getCurrentStreak,
+  getTeaserAnalysis,
+  getPublicDream,
 };

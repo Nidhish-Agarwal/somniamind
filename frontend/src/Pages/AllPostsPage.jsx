@@ -56,7 +56,6 @@ export default function AllPostsPage() {
       const response = await axiosPrivate.get(`community/post?${queryParams}`, {
         params,
       });
-      console.log("Fetched posts:", response.data);
       const { posts: newPosts, currentPage, totalPages } = response.data;
 
       setPosts((prev) =>

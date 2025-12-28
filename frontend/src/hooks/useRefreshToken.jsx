@@ -1,3 +1,4 @@
+import { trackEvent } from "../analytics/ga.js";
 import axios from "../api/axios.js";
 import useAuth from "./useAuth";
 
@@ -18,6 +19,11 @@ function useRefreshToken() {
         roles: response.data.roles,
         accessToken: response.data.accessToken,
       };
+    });
+    trackEvent("refresh_attempt", {
+      status: "success",
+      context: "auth",
+      userId: response.data.userId,
     });
 
     return response.data.accessToken;

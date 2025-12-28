@@ -1,7 +1,4 @@
-// We'll begin with the structure and the first sections:
-// Header, Sentiment Card, and Image Block with Prompt + Retry + Loading
-
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import {
   Dialog,
@@ -25,7 +22,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { motion } from "framer-motion";
-import { FaArrowLeft, FaEdit, FaArrowRight } from "react-icons/fa";
+import { FaArrowLeft } from "react-icons/fa";
 import { RotateCw, AlertCircle } from "lucide-react";
 import HeartIcon from "../icons/HeartIcon";
 import NoImage from "../../assets/No-Image.png";
@@ -35,6 +32,8 @@ import HighlightMoment from "../widgets/HighlightMoment";
 import { DPTCard } from "../widgets/DPTCard";
 import DreamMetaSection from "../DreamMetaSection";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
+import ShareModal from "./ShareModal";
+import { trackEvent } from "../../analytics/ga";
 
 export default function DreamDetailsOverlay({
   dream,
@@ -45,8 +44,9 @@ export default function DreamDetailsOverlay({
   handleLike,
   liked,
 }) {
-  console.log(dream.analysis);
   const axiosPrivate = useAxiosPrivate();
+
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   const MotionItem = motion(AccordionItem);
 
@@ -96,6 +96,14 @@ export default function DreamDetailsOverlay({
     Happy: "😊",
   };
 
+  useEffect(() => {
+    trackEvent("Engagement", {
+      source: "Dream",
+      event: "Viewed Analysis",
+      postId: dream._id,
+    });
+  }, [dream._id]);
+
   const intensityPercent = Math.min(Math.max(dream.intensity, 0), 100);
 
   return (
@@ -115,18 +123,53 @@ export default function DreamDetailsOverlay({
                 {format(new Date(dream.date), "dd MMM yyyy")}
               </p>
             </div>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="h-8 w-8 flex justify-center items-center rounded-full bg-white/50 hover:bg-white/60">
-                    <HeartIcon liked={liked} onClick={handleLike} />
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{liked ? "Unlike Dream" : "Like Dream"}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <div className="flex gap-2">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="h-8 w-8 flex justify-center items-center rounded-full bg-white/50 hover:bg-white/60">
+                      <HeartIcon liked={liked} onClick={handleLike} />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{liked ? "Unlike Dream" : "Like Dream"}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              {parseFloat(dream.analysis.analysis_version.slice(1)) >= 1.4 &&
+                dream.analysis.image_status === "completed" && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          aria-label="Share dream"
+                          onClick={() => setIsShareModalOpen(true)}
+                          className="h-8 w-8 flex justify-center items-center rounded-full bg-white/50 hover:bg-white/60"
+                        >
+                          <svg
+                            className="w-6 h-6 transition-transform group-hover:scale-110"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <circle cx="18" cy="5" r="2.5" />
+                            <circle cx="6" cy="12" r="2.5" />
+                            <circle cx="18" cy="19" r="2.5" />
+                            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                          </svg>
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Share Dream</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+            </div>
           </DialogHeader>
 
           <div className="grid md:grid-cols-2 gap-6">
@@ -406,6 +449,13 @@ export default function DreamDetailsOverlay({
             </motion.div>
           </div>
         </ScrollArea>
+        <ShareModal
+          isOpen={isShareModalOpen}
+          onClose={() => setIsShareModalOpen(false)}
+          share_captions={dream.analysis.share_captions}
+          shareImage={dream.analysis.share_image_url}
+          dreamId={dream._id}
+        />
       </DialogContent>
     </Dialog>
   );

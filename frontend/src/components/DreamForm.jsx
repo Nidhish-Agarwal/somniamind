@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   X,
   ChevronLeft,
@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import useAxiosPrivate from "../hooks/useAxiosPrivate";
+import { trackEvent } from "../analytics/ga";
 
 // Mock components for demonstration
 const Input = ({ className, ...props }) => (
@@ -144,11 +145,26 @@ const steps = [
 export default function DreamForm({ onClose }) {
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
   const [completedSteps, setCompletedSteps] = useState(new Set());
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
   const today = new Date().toISOString().split("T")[0];
   const axiosPrivate = useAxiosPrivate();
+
+  useEffect(() => {
+    trackEvent("dream_create_started");
+    // ADD THIS:
+    setTimeout(() => setIsVisible(true), 10);
+  }, []);
+
+  const handleClose = () => {
+    setIsVisible(false);
+    setTimeout(() => {
+      trackEvent("dream_create_abandoned");
+      onClose();
+    }, 300);
+  };
 
   // Form data state
   const [formData, setFormData] = useState({
@@ -169,6 +185,7 @@ export default function DreamForm({ onClose }) {
 
   // Validation functions
   const validateField = (field, value) => {
+    trackEvent("Validation Failed", { source: "Dream Form", field });
     switch (field) {
       case "title":
         if (!value || value.trim().length === 0) {
@@ -313,10 +330,12 @@ export default function DreamForm({ onClose }) {
       // Send data to the server
       await axiosPrivate.post("/dream", cleanedData);
 
+      trackEvent("dream_create_completed");
+
       toast.success("Dream saved successfully! 🎉", {
         description: "You can view your dream in My Dreams section.",
       });
-      onClose();
+      handleClose();
     } catch (error) {
       console.error("Error saving dream:", error);
       toast.error("Failed to save dream. Please try again.");
@@ -675,8 +694,16 @@ export default function DreamForm({ onClose }) {
   const isNextDisabled = !isStepValid();
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+    <div
+      className={`fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity duration-300 ${
+        isVisible ? "opacity-100" : "opacity-0"
+      }`}
+    >
+      <div
+        className={`bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto transition-all duration-300 ${
+          isVisible ? "opacity-100 scale-100" : "opacity-0 scale-95"
+        }`}
+      >
         {/* Header */}
         <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-6">
           <div className="flex items-center justify-between">
@@ -690,7 +717,10 @@ export default function DreamForm({ onClose }) {
               </p>
             </div>
             <button
-              onClick={onClose}
+              onClick={() => {
+                trackEvent("dream_create_abandoned");
+                handleClose();
+              }}
               className="p-2 hover:bg-white/20 rounded-full transition-colors"
             >
               <X className="w-5 h-5" />

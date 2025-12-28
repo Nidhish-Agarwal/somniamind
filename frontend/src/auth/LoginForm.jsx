@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -22,6 +22,7 @@ import { toast } from "sonner";
 import axios from "../api/axios.js";
 import useAuth from "../hooks/useAuth.jsx";
 import GoogleLoginButton from "./GoogleLoginButton.jsx";
+import { trackEvent } from "../analytics/ga.js";
 
 // Validation Schema
 const loginSchema = z.object({
@@ -31,9 +32,11 @@ const loginSchema = z.object({
 
 export default function LoginForm() {
   const { setAuth, persist, setPersist } = useAuth();
-  const navigate = useNavigate();
   const location = useLocation();
-  const from = location.state?.from?.pathname || "/dashboard";
+  const params = new URLSearchParams(location.search);
+  const redirectParam = params.get("redirect");
+
+  const from = redirectParam || "/dashboard";
 
   const {
     register,
@@ -50,10 +53,10 @@ export default function LoginForm() {
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
-    if (location.state?.from) {
+    if (redirectParam) {
       setRedirectMessage("You need to log in to access this feature.");
     }
-  }, [location.state?.from]);
+  }, [redirectParam]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -74,11 +77,21 @@ export default function LoginForm() {
     setLoading(true);
 
     try {
+      trackEvent("login_attempt", {
+        method: "local",
+        status: "processing",
+        context: "auth",
+      });
       const response = await axios.post("/auth/login", data, {
         withCredentials: true,
       });
 
       if (response.status === 200) {
+        trackEvent("login_attempt", {
+          method: "local",
+          status: "success",
+          context: "auth",
+        });
         setErrorMessage("");
         const accessToken = response.data?.accessToken;
         const roles = response.data?.roles;
@@ -88,9 +101,14 @@ export default function LoginForm() {
           accessToken,
           roles,
         });
-        navigate(from, { replace: true });
+        window.location.href = from;
       }
     } catch (err) {
+      trackEvent("login_attempt", {
+        method: "local",
+        status: "failed",
+        context: "auth",
+      });
       toast.error(err.message || "Login failed");
       if (!err?.response) {
         console.log(err);
@@ -179,7 +197,7 @@ export default function LoginForm() {
             {/* Welcome Text */}
             <div className="space-y-4">
               <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-200 via-pink-200 to-cyan-200 bg-clip-text text-transparent">
-                DreamForge
+                SomniaMind
               </h1>
               <p className="text-xl text-purple-200 opacity-90">
                 {getGreeting()}
@@ -249,6 +267,15 @@ export default function LoginForm() {
                   <div className="mb-6 p-4 rounded-2xl bg-amber-500/20 border border-amber-400/30 backdrop-blur-sm">
                     <p className="text-amber-200 text-center animate-pulse">
                       ✨ {redirectMessage}
+                    </p>
+                  </div>
+                )}
+
+                {errorMessage && (
+                  <div className="mb-6 p-4 rounded-2xl bg-red-500/20 border border-red-400/30 backdrop-blur-sm">
+                    <p className="text-red-300 text-center animate-pulse flex items-center justify-center">
+                      <Moon className="w-4 h-4 mr-2" />
+                      {errorMessage}
                     </p>
                   </div>
                 )}
@@ -380,25 +407,49 @@ export default function LoginForm() {
                   setErrorMessage={setErrorMessage}
                 />
 
-                {errorMessage && (
-                  <div className="mt-6 p-4 rounded-2xl bg-red-500/20 border border-red-400/30 backdrop-blur-sm">
-                    <p className="text-red-300 text-center animate-pulse flex items-center justify-center">
-                      <Moon className="w-4 h-4 mr-2" />
-                      {errorMessage}
-                    </p>
-                  </div>
-                )}
-
                 {/* Signup Link */}
                 <div className="text-center mt-8 ">
                   <p className="text-purple-200 text-sm">
                     New to the dream realm?{" "}
                     <a
-                      href="/signup"
+                      href={`/signup?redirect=${encodeURIComponent(from)}`}
                       className="text-cyan-400 hover:text-cyan-300 font-medium transition-colors duration-200 hover:underline"
                     >
                       Begin your mystical journey
                     </a>
+                  </p>
+                </div>
+                {/* Legal Links */}
+                <div className="mt-6 text-center text-xs text-purple-300/70 leading-relaxed">
+                  <p>
+                    By continuing, you agree to our{" "}
+                    <a
+                      href="/terms"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline hover:text-cyan-300 transition-colors"
+                    >
+                      Terms of Service
+                    </a>
+                    ,{" "}
+                    <a
+                      href="/privacy"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline hover:text-cyan-300 transition-colors"
+                    >
+                      Privacy Policy
+                    </a>{" "}
+                    and{" "}
+                    <a
+                      href="/disclaimer"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline hover:text-cyan-300 transition-colors"
+                    >
+                      Disclaimer
+                    </a>
+                    .
                   </p>
                 </div>
               </CardContent>

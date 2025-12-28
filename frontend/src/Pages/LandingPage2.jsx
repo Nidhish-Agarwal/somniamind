@@ -1,4 +1,3 @@
-import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
@@ -28,7 +27,8 @@ import {
 } from "lucide-react";
 
 import ParticlesBackground from "../components/ParticleBackground";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import OnboardingPage from "../components/onboarding/OnBoardingPage";
 
 const features = [
   {
@@ -99,7 +99,7 @@ const benefits = [
 ];
 
 export default function DreamLandingPage() {
-  const navigate = useNavigate();
+  const [showWelcomeOverlay, setShowWelcomeOverlay] = useState(false);
   const { scrollY } = useScroll();
   // parallax transforms
   const y1 = useTransform(scrollY, [0, 500], [0, 100]);
@@ -147,16 +147,34 @@ export default function DreamLandingPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8 }}
+            className="mt-8 flex items-center gap-4"
           >
+            {/* Primary CTA */}
             <Button
               size="lg"
-              className="mt-8 px-8 py-4 bg-white text-black rounded-xl shadow-lg hover:bg-gray-200 transition"
-              onClick={() => navigate("/login")}
+              className="px-8 py-4 bg-white text-black rounded-xl shadow-lg hover:bg-gray-200 transition"
+              onClick={() => setShowWelcomeOverlay(true)}
             >
               Start Exploring
             </Button>
+
+            {/* Secondary CTA */}
+            <a href={"/login"}>
+              <Button
+                size="lg"
+                variant="ghost"
+                className="px-8 py-4 text-white/80 hover:text-white hover:bg-white/10 rounded-xl transition"
+              >
+                Log in
+              </Button>
+            </a>
           </motion.div>
         </section>
+
+        {showWelcomeOverlay && (
+          // <WelcomeOverlay setShowWelcomeOverlay={setShowWelcomeOverlay} />
+          <OnboardingPage setShowWelcomeOverlay={setShowWelcomeOverlay} />
+        )}
 
         {/* Benefits */}
         <section className="py-24 px-6 dark:bg-zinc-950 text-center">
@@ -360,7 +378,7 @@ export default function DreamLandingPage() {
           <Button
             size="lg"
             className="px-8 py-4 bg-indigo-600 hover:bg-indigo-500 transition text-white rounded-xl"
-            onClick={() => navigate("/login")}
+            onClick={() => setShowWelcomeOverlay(true)}
           >
             Begin Your Journey
           </Button>

@@ -1,4 +1,3 @@
-import React from "react";
 import AddDreamButton from "./AddDreamButton";
 import DailyStreakCard from "./DailyStreakCard";
 import DreamscapeMeter from "./DreamscapeMeter";

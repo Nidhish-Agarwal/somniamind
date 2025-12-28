@@ -8,11 +8,14 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import useDreamSocket from "../hooks/useDreamSocket";
 import { useSearchContext } from "../context/SearchContext";
+import DreamForm from "../components/DreamForm";
+import { Plus } from "lucide-react";
 
 const MyDreamsPage = () => {
   const { filters } = useSearchContext();
   const [dreams, setDreams] = useState([]);
   const [page, setPage] = useState(1);
+  const [formOpen, setFormOpen] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(true);
   const [initialLoad, setInitialLoad] = useState(true);
@@ -113,6 +116,28 @@ const MyDreamsPage = () => {
 
   return (
     <div className="w-full flex flex-col items-center justify-center min-h-[60vh] px-4 py-8">
+      {/* Floating Add Dream Button - Desktop */}
+      {dreams.length > 0 && !initialLoad && (
+        <button
+          onClick={() => setFormOpen(true)}
+          className="hidden sm:flex fixed bottom-8 right-8 z-50 items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 active:scale-95 group"
+          aria-label="Log a new dream"
+        >
+          <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
+          <span className="font-medium">Log Dream</span>
+        </button>
+      )}
+
+      {/* Floating Add Dream Button - Mobile (Icon Only) */}
+      {dreams.length > 0 && !initialLoad && (
+        <button
+          onClick={() => setFormOpen(true)}
+          className="sm:hidden fixed bottom-6 right-6 z-50 w-14 h-14 bg-gradient-to-br from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 active:scale-95 flex items-center justify-center group"
+          aria-label="Log a new dream"
+        >
+          <Plus className="w-6 h-6 group-hover:rotate-90 transition-transform duration-300" />
+        </button>
+      )}
       {initialLoad ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -155,12 +180,13 @@ const MyDreamsPage = () => {
           </p>
           <Button
             className="mt-4 bg-indigo-600 text-white px-6 py-2 rounded-xl shadow-md hover:bg-indigo-500 dark:bg-indigo-500 dark:hover:bg-indigo-400 transition"
-            onClick={() => toast.info("Dream logging coming soon!")}
+            onClick={() => setFormOpen(true)}
           >
             Log a Dream
           </Button>
         </div>
       )}
+      {formOpen && <DreamForm onClose={() => setFormOpen(false)} />}
     </div>
   );
 };

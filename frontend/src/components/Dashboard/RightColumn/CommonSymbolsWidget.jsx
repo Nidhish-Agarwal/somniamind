@@ -22,7 +22,6 @@ const CommonSymbolsWidget = ({
   loading = false,
   error = null,
 }) => {
-  console.log("smbols", symbols);
   return (
     <motion.div variants={itemVariants}>
       <Card className="backdrop-blur-sm bg-white/90 border-0 shadow-xl">

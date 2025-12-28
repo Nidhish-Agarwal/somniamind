@@ -1,3 +1,4 @@
+const ROLES_LIST = require("../config/roles_list.js");
 const Comment = require("../models/Comment.model.js");
 const CommunityPost = require("../models/CommunityPost.model.js");
 const ProcessedDream = require("../models/processedDream.model.js");
@@ -594,7 +595,10 @@ const deleteComment = async (req, res) => {
       return res.status(404).json({ message: "No comment found" });
     }
 
-    if (comment.user.toString() !== userId) {
+    const isOwner = comment.user.toString() === userId;
+    const isAdmin = req.roles.includes(ROLES_LIST.Admin);
+
+    if (!isOwner && !isAdmin) {
       return res
         .status(401)
         .json({ message: "Unauthorized: Not the comment owner." });
@@ -704,10 +708,13 @@ const deletePost = async (req, res) => {
       return res.status(404).json({ message: "Post not found." });
     }
 
-    if (post.user.toString() !== userId) {
+    const isOwner = post.user.toString() === userId;
+    const isAdmin = req.roles.includes(ROLES_LIST.Admin);
+
+    if (!isOwner && !isAdmin) {
       return res
-        .status(403)
-        .json({ message: "Forbidden: Not the post owner." });
+        .status(401)
+        .json({ message: "Unauthorized: Not the post owner." });
     }
 
     const comments = post.comments || [];

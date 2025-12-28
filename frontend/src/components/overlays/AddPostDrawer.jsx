@@ -297,7 +297,6 @@ const AddPostDrawer = () => {
         hashtags,
       });
 
-      console.log("Post created successfully:", response.data);
       // Reset form and close drawer
       setSelectedDream(null);
       setCaption("");

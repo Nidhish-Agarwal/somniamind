@@ -2,7 +2,6 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -25,6 +24,7 @@ import { toast } from "sonner";
 import api from "../api/axios";
 import useAuth from "../hooks/useAuth";
 import GoogleLoginButton from "./GoogleLoginButton";
+import { trackEvent } from "../analytics/ga";
 
 // Validation Schema
 const signupSchema = z
@@ -62,7 +62,9 @@ export default function SignupForm() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [currentTime, setCurrentTime] = useState(new Date());
-  const navigate = useNavigate();
+
+  const params = new URLSearchParams(location.search);
+  const redirect = params.get("redirect") || "/dashboard";
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -82,10 +84,20 @@ export default function SignupForm() {
   const onSubmit = async (data) => {
     setLoading(true);
     try {
+      trackEvent("signup_attempt", {
+        method: "local",
+        status: "processing",
+        context: "auth",
+      });
       const response = await api.post("/auth/signup", data, {
         withCredentials: true,
       });
       if (response.status === 201) {
+        trackEvent("signup_attempt", {
+          method: "local",
+          status: "success",
+          context: "auth",
+        });
         setErrorMessage("");
         const accessToken = response.data?.accessToken;
         const roles = response.data?.roles;
@@ -95,9 +107,14 @@ export default function SignupForm() {
           accessToken,
           roles,
         });
-        navigate("/dashboard");
+        window.location.href = redirect;
       }
     } catch (err) {
+      trackEvent("signup_attempt", {
+        method: "local",
+        status: "failed",
+        context: "auth",
+      });
       toast.error(err.message || "Login failed");
       if (!err?.response) {
         setErrorMessage("No server response. Please check your internet.");
@@ -191,6 +208,14 @@ export default function SignupForm() {
               </CardHeader>
 
               <CardContent className="relative z-10 p-8 pt-0">
+                {errorMessage && (
+                  <div className="mb-6 p-4 rounded-2xl bg-red-500/20 border border-red-400/30 backdrop-blur-sm">
+                    <p className="text-red-300 text-center animate-pulse flex items-center justify-center">
+                      <Moon className="w-4 h-4 mr-2" />
+                      {errorMessage}
+                    </p>
+                  </div>
+                )}
                 <div className="space-y-6">
                   {/* Name Field */}
                   <div className="space-y-2">
@@ -369,25 +394,50 @@ export default function SignupForm() {
                   setLoading={setLoading}
                   setErrorMessage={setErrorMessage}
                 />
-                {errorMessage && (
-                  <div className="mt-6 p-4 rounded-2xl bg-red-500/20 border border-red-400/30 backdrop-blur-sm">
-                    <p className="text-red-300 text-center animate-pulse flex items-center justify-center">
-                      <Moon className="w-4 h-4 mr-2" />
-                      {errorMessage}
-                    </p>
-                  </div>
-                )}
 
                 {/* Login Link */}
                 <div className="text-center mt-8 ">
                   <p className="text-purple-200 text-sm">
                     Already part of the realm?{" "}
                     <a
-                      href="/login"
+                      href={`/login?redirect=${encodeURIComponent(redirect)}`}
                       className="text-cyan-400 hover:text-cyan-300 font-medium transition-colors duration-200 hover:underline"
                     >
                       Go to Login
                     </a>
+                  </p>
+                </div>
+                {/* Legal Links */}
+                <div className="mt-6 text-center text-xs text-purple-300/70 leading-relaxed">
+                  <p>
+                    By continuing, you agree to our{" "}
+                    <a
+                      href="/terms"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline hover:text-cyan-300 transition-colors"
+                    >
+                      Terms of Service
+                    </a>
+                    ,{" "}
+                    <a
+                      href="/privacy"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline hover:text-cyan-300 transition-colors"
+                    >
+                      Privacy Policy
+                    </a>{" "}
+                    and{" "}
+                    <a
+                      href="/disclaimer"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline hover:text-cyan-300 transition-colors"
+                    >
+                      Disclaimer
+                    </a>
+                    .
                   </p>
                 </div>
               </CardContent>
@@ -409,7 +459,7 @@ export default function SignupForm() {
             {/* Welcome Text */}
             <div className="space-y-4">
               <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-200 via-pink-200 to-cyan-200 bg-clip-text text-transparent">
-                DreamForge
+                SomniaMind
               </h1>
               <p className="text-xl text-purple-200 opacity-90">
                 {getGreeting()}

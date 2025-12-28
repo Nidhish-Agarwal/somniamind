@@ -189,7 +189,7 @@ const ProfileHeaderCard = ({ user, onUpdateProfile, isUpdating }) => {
                     name="username"
                     value={profile.username}
                     onChange={handleChange}
-                    className="text-center text-xl font-bold"
+                    className="text-center text-xl font-bold dark:text-black"
                     placeholder="Username"
                     disabled={isUpdating}
                   />
@@ -198,7 +198,7 @@ const ProfileHeaderCard = ({ user, onUpdateProfile, isUpdating }) => {
                     value={profile.bio}
                     onChange={handleChange}
                     placeholder="Tell us about yourself..."
-                    className="text-center resize-none"
+                    className="text-center resize-none dark:text-black"
                     rows={2}
                     disabled={isUpdating}
                   />
@@ -233,6 +233,9 @@ const ProfileHeaderCard = ({ user, onUpdateProfile, isUpdating }) => {
                     <h1 className="text-2xl font-bold text-gray-800">
                       {user?.username}
                     </h1>
+                    <Badge variant="secondary" className="capitalize">
+                      {user?.provider} login
+                    </Badge>
                     {user?.isVerified && (
                       <TooltipProvider>
                         <Tooltip>
@@ -265,14 +268,11 @@ const ProfileHeaderCard = ({ user, onUpdateProfile, isUpdating }) => {
                     </p>
                   )}
                   <div className="flex flex-wrap gap-2 justify-center items-center pt-2">
-                    <Badge variant="secondary" className="capitalize">
-                      {user?.provider} login
-                    </Badge>
                     <Button
                       onClick={() => setIsEditing(true)}
                       variant="ghost"
                       size="sm"
-                      className="hover:bg-white/50"
+                      className="hover:bg-white/50 dark:bg-black"
                       disabled={isUpdating}
                     >
                       <Edit3 className="w-4 h-4 mr-2" />

@@ -1,9 +1,18 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useEffect } from "react";
+import { trackEvent } from "../analytics/ga";
 
 export default function Unauthorized() {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    trackEvent("Security", {
+      context: "Unauthorized Access",
+      location: window.location,
+    });
+  }, []);
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-900 text-white">
@@ -11,7 +20,7 @@ export default function Unauthorized() {
         <h1 className="text-5xl font-bold text-yellow-500">403</h1>
         <p className="text-lg text-gray-300 mt-2">Access Denied</p>
         <p className="text-sm text-gray-400 mt-1">
-          You don't have permission to view this page.
+          You don&apos;t have permission to view this page.
         </p>
         <CardContent className="mt-4 space-y-3">
           <Button

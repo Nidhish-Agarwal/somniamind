@@ -4,12 +4,7 @@ import { loadSlim } from "tsparticles-slim";
 
 const ParticleBackground = () => {
   const particlesInit = useCallback(async (engine) => {
-    console.log("Initializing tsparticles engine", engine);
     await loadSlim(engine);
-  }, []);
-
-  const particlesLoaded = useCallback((container) => {
-    console.log("Particles container loaded", container);
   }, []);
 
   return (
@@ -26,7 +21,6 @@ const ParticleBackground = () => {
       <Particles
         id="tsparticles"
         init={particlesInit}
-        loaded={particlesLoaded}
         options={{
           fullScreen: false,
           background: {
