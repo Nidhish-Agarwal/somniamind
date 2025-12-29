@@ -42,6 +42,7 @@ import useAuth from "../../hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import ROLES_LIST from "../../utils/roles";
+import LazyImage from "../LazyImage";
 
 const CommentItem = ({
   comment,
@@ -211,11 +212,12 @@ const CommentItem = ({
             align="start"
           >
             <div className="flex gap-3 items-start">
-              <img
+              <LazyImage
                 src={comment.user.profileImage}
                 alt="User"
                 className="w-12 h-12 rounded-full"
               />
+
               <div className="flex flex-col gap-1">
                 <p className="font-semibold text-base">
                   {comment.user.username}

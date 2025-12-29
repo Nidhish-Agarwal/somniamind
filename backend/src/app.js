@@ -288,8 +288,19 @@ app.use("/api/dream", dreamRouter);
 app.use("/api/community", communityRouter);
 app.use("/api/auth", authRouter);
 
-// Serve frontend build (assets + index.html)
-app.use(express.static(path.join(__dirname, "../public/dist")));
+const distPath = path.join(__dirname, "../public/dist");
+
+// Serve assets FIRST
+app.use(
+  "/assets",
+  express.static(path.join(distPath, "assets"), {
+    immutable: true,
+    maxAge: "1y",
+  })
+);
+
+// Serve other static files
+app.use(express.static(distPath));
 
 // SPA fallback (must be LAST)
 app.get("*", (req, res) => {

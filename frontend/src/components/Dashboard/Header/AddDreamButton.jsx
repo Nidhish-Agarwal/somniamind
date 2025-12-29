@@ -1,8 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
-import DreamForm from "../../DreamForm";
-import { useState } from "react";
+import { useState, Suspense, lazy } from "react";
+import OverlayLoader from "../../loaders/OverlayLoader";
+
+const DreamForm = lazy(() => import("../../DreamForm"));
 
 export default function AddDreamButton() {
   const [formOpen, setFormOpen] = useState(false);
@@ -17,7 +19,11 @@ export default function AddDreamButton() {
           Add Dream
         </Button>
       </DialogTrigger>
-      {formOpen && <DreamForm onClose={() => setFormOpen(false)} />}
+      {formOpen && (
+        <Suspense fallback={<OverlayLoader />}>
+          <DreamForm onClose={() => setFormOpen(false)} />
+        </Suspense>
+      )}
     </Dialog>
   );
 }

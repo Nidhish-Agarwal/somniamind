@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense, lazy } from "react";
 import { format } from "date-fns";
 import {
   Dialog,
@@ -25,15 +25,16 @@ import { motion } from "framer-motion";
 import { FaArrowLeft } from "react-icons/fa";
 import { RotateCw, AlertCircle } from "lucide-react";
 import HeartIcon from "../icons/HeartIcon";
-import NoImage from "../../assets/No-Image.png";
 import SentimentRadialChart from "../widgets/SentimentRadialChart";
 import VibeToneDisplay from "../widgets/VibeToneDisplay";
 import HighlightMoment from "../widgets/HighlightMoment";
 import { DPTCard } from "../widgets/DPTCard";
 import DreamMetaSection from "../DreamMetaSection";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
-import ShareModal from "./ShareModal";
 import { trackEvent } from "../../analytics/ga";
+import LazyImage from "../LazyImage";
+import OverlayLoader from "../loaders/OverlayLoader";
+const ShareModal = lazy(() => import("./ShareModal"));
 
 export default function DreamDetailsOverlay({
   dream,
@@ -250,8 +251,8 @@ export default function DreamDetailsOverlay({
 
                 {dream.analysis.image_status === "completed" && (
                   <div className="rounded-xl overflow-hidden border border-muted shadow-md">
-                    <img
-                      src={dream.analysis.image_url || NoImage}
+                    <LazyImage
+                      src={dream.analysis.image_url}
                       alt="Dream visualization"
                       className="w-full h-auto max-h-[400px] object-cover transition-all duration-300 hover:scale-[1.01]"
                     />
@@ -449,13 +450,15 @@ export default function DreamDetailsOverlay({
             </motion.div>
           </div>
         </ScrollArea>
-        <ShareModal
-          isOpen={isShareModalOpen}
-          onClose={() => setIsShareModalOpen(false)}
-          share_captions={dream.analysis.share_captions}
-          shareImage={dream.analysis.share_image_url}
-          dreamId={dream._id}
-        />
+        <Suspense fallback={<OverlayLoader />}>
+          <ShareModal
+            isOpen={isShareModalOpen}
+            onClose={() => setIsShareModalOpen(false)}
+            share_captions={dream.analysis.share_captions}
+            shareImage={dream.analysis.share_image_url}
+            dreamId={dream._id}
+          />
+        </Suspense>
       </DialogContent>
     </Dialog>
   );

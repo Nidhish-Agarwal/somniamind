@@ -13,6 +13,7 @@ const {
   renderPublicDreamHTML,
   render404HTML,
 } = require("../renderers/index.js");
+const { emitAddDream } = require("../utils/socketHelper.js");
 
 const moodLabels = ["Terrified", "Sad", "Neutral", "Happy", "Euphoric"];
 
@@ -144,6 +145,13 @@ const addRawDream = async (req, res) => {
     await user.save();
     // Adding To queue for AI processing
     await addAnalysisJob(savedDream._id, userId);
+
+    // Send socket update to frontend for a new dream
+    try {
+      emitAddDream(userId, savedDream);
+    } catch (er) {
+      console.error("failed to emit dream update", er.message);
+    }
 
     return res.status(201).json({
       ...savedDream.toObject(),

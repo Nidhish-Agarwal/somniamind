@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense, lazy } from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import DreamDetailsOverlay from "../overlays/DreamDetailOverlay";
 import { motion } from "framer-motion";
 import HeartIcon from "../icons/HeartIcon";
 import { RotateCw, AlertCircle } from "lucide-react";
@@ -16,6 +15,12 @@ import { format } from "date-fns";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import NoImage from "../../assets/No-Image.png";
 import { trackEvent } from "../../analytics/ga";
+import LazyImage from "../LazyImage";
+import OverlayLoader from "../loaders/OverlayLoader";
+
+const DreamDetailsOverlay = lazy(() =>
+  import("../overlays/DreamDetailOverlay")
+);
 
 const DreamCard = ({ dream, onRetry, updateDream }) => {
   const [isRetrying, setIsRetrying] = useState(false);
@@ -164,12 +169,18 @@ const DreamCard = ({ dream, onRetry, updateDream }) => {
             whileHover={{ scale: 1.05 }}
             transition={{ duration: 0.5 }}
           />
-          <img
+          <LazyImage
+            src={dream?.analysis?.image_url}
+            alt="Dream visualization"
+            className="hidden"
+          />
+
+          {/* <img
             src={dream?.analysis?.image_url}
             alt="dream"
             onError={(e) => (e.currentTarget.src = NoImage)}
             className="hidden"
-          />
+          /> */}
 
           <div className="absolute inset-0 bg-black/40" />
 
@@ -230,15 +241,17 @@ const DreamCard = ({ dream, onRetry, updateDream }) => {
       </motion.div>
 
       {openOverlay && (
-        <DreamDetailsOverlay
-          dream={dream}
-          setOpenOverlay={setOpenOverlay}
-          updateDream={updateDream}
-          onRetryImage={handleRetryImage}
-          isRetryingImage={isRetryingImage}
-          handleLike={handleLike}
-          liked={dream.isLiked}
-        />
+        <Suspense fallback={<OverlayLoader />}>
+          <DreamDetailsOverlay
+            dream={dream}
+            setOpenOverlay={setOpenOverlay}
+            updateDream={updateDream}
+            onRetryImage={handleRetryImage}
+            isRetryingImage={isRetryingImage}
+            handleLike={handleLike}
+            liked={dream.isLiked}
+          />
+        </Suspense>
       )}
     </>
   );

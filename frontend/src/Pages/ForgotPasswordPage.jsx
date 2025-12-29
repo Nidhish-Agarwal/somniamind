@@ -44,7 +44,7 @@ export default function ForgotPasswordPage() {
       setLoading(true);
       await axiosPrivate.post("/auth/forgot-password", { email: data.email });
       setEmailSent(true);
-      toast.success("Check your inbox for reset instructions.");
+      toast.success("Check your inbox/spam for reset instructions.");
     } catch (err) {
       if (err.response?.status === 429) {
         toast.error("Too many requests. Please wait before trying again.");
@@ -189,7 +189,7 @@ export default function ForgotPasswordPage() {
 
                   <div className="space-y-4">
                     <p className="text-purple-200 text-sm opacity-80">
-                      Check your inbox and follow the mystical instructions to
+                      Check your inbox/spam and follow the instructions to
                       restore your access to the dream realm.
                     </p>
 

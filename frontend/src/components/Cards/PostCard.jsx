@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState, Suspense, lazy } from "react";
 import {
   Card,
   CardHeader,
@@ -46,10 +46,12 @@ import { formatDistanceToNow } from "date-fns";
 import useAuth from "../../hooks/useAuth";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import NoImage from "../../assets/No-Image.png";
-import PostOverlay from "../PostOverlay/PostOverlay";
 import DreamPersonalityTypes from "../../data/DreamPersonalityTypes.json";
 import { trackEvent } from "../../analytics/ga";
 import ROLES_LIST from "../../utils/roles";
+import OverlayLoader from "../loaders/OverlayLoader";
+
+const PostOverlay = lazy(() => import("../PostOverlay/PostOverlay"));
 
 const PostCard = ({ post, updatePost, onDelete }) => {
   const { user, caption, createdAt, title } = post;
@@ -516,14 +518,16 @@ const PostCard = ({ post, updatePost, onDelete }) => {
 
       {/* Overlay */}
       {isOverlayOpen && (
-        <PostOverlay
-          post={post}
-          onClose={onClose}
-          handleLike={handleLike}
-          handleBookmark={handleBookmark}
-          updatePost={updatePost}
-          onDelete={onDelete}
-        />
+        <Suspense fallback={<OverlayLoader />}>
+          <PostOverlay
+            post={post}
+            onClose={onClose}
+            handleLike={handleLike}
+            handleBookmark={handleBookmark}
+            updatePost={updatePost}
+            onDelete={onDelete}
+          />
+        </Suspense>
       )}
     </motion.div>
   );

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Sparkles } from "lucide-react";
+import LazyImage from "../components/LazyImage";
 
 const DreamSummaryPage = ({ dreamData }) => {
   const [isVisible, setIsVisible] = useState(false);
@@ -22,11 +23,12 @@ const DreamSummaryPage = ({ dreamData }) => {
           }`}
         >
           <div className="relative rounded-3xl overflow-hidden shadow-2xl shadow-purple-200/50">
-            <img
+            <LazyImage
               src={dreamData.image}
-              alt="Dream visualization"
+              alt="Dream Visualization"
               className="w-full aspect-[4/5] object-cover"
             />
+
             <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
           </div>
         </div>

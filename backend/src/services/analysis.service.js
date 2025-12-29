@@ -254,7 +254,6 @@ const processDreamAnalysis = async (dreamId) => {
       .trim();
 
     if (!isValidJson(cleanedResponse)) {
-      console.error("❌ Invalid JSON:", cleanedResponse);
       throw new Error("Invalid JSON format from AI");
     }
 

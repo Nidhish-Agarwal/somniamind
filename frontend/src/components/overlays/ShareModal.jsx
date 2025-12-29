@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { trackEvent } from "../../analytics/ga";
+import LazyImage from "../LazyImage";
 
 const ShareModal = ({
   isOpen,
@@ -228,11 +229,10 @@ const ShareModal = ({
           </div>
 
           <div className="relative rounded-xl overflow-hidden shadow-xl bg-slate-700/50">
-            <img
+            <LazyImage
               src={image}
               alt="Dream share preview"
               className="w-full h-auto"
-              loading="lazy"
             />
           </div>
 

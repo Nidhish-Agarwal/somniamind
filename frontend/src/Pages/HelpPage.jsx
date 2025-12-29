@@ -8,6 +8,7 @@ import DreamAnalysisTimeline from "../components/widgets/DreamAnalysisTimeline";
 import FeedbackSection from "../components/widgets/FeedbackSection";
 import GlossarySection from "../components/widgets/GolssarySection";
 import HelpHeroSection from "../components/widgets/HelpHeroSection";
+import { useState } from "react";
 
 const HelpPage = () => {
   const [searchTerm, setSearchTerm] = useState("");

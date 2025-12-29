@@ -11,6 +11,7 @@ import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { trackEvent } from "../../analytics/ga";
+import LazyImage from "../LazyImage";
 
 const Post = ({
   post,
@@ -337,11 +338,12 @@ const Post = ({
         {/* Post Header */}
         <div className="flex justify-between">
           <div className="flex items-center gap-3 mb-4">
-            <img
+            <LazyImage
               src={user.profileImage}
               alt="User"
               className="w-10 h-10 rounded-full"
             />
+
             <div>
               <h3 className="font-semibold">{user.username}</h3>
               <p className="text-sm text-gray-500">
@@ -364,9 +366,9 @@ const Post = ({
           <h2 className="text-2xl font-bold">{title}</h2>
           <p className="text-gray-700 mt-2">{caption}</p>
         </div>
-        <img
+        <LazyImage
           src={image}
-          alt="Dream Image"
+          alt="Dream Visualization"
           className="w-full h-80 object-cover rounded-lg mt-4"
         />
 
@@ -473,11 +475,12 @@ const Post = ({
               {comments.map((comment) => (
                 <div key={comment._id} className="mb-4 border-b pb-3">
                   <div className="flex items-start gap-2">
-                    <img
+                    <LazyImage
                       src={comment.user.profileImage}
                       alt="User"
                       className="w-8 h-8 rounded-full"
                     />
+
                     <div className="w-full">
                       <div className="flex gap-2 items-baseline">
                         <p className="font-semibold">{comment.user.username}</p>
@@ -590,11 +593,12 @@ const Post = ({
                                   : null
                               }
                             >
-                              <img
+                              <LazyImage
                                 src={reply.user.profileImage}
                                 alt="User"
                                 className="w-8 h-8 rounded-full"
                               />
+
                               <div>
                                 <div className="flex items-baseline gap-2">
                                   <p className="font-semibold">

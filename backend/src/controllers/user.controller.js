@@ -3,7 +3,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { getCurrentStreak } = require("./dream.controller.js");
 const RawDream = require("../models/rawDream.model.js");
-const transporter = require("../utils/mailer.js");
+const { sendFeedbackEmail } = require("../utils/mailer.js");
 
 const fetchAllUsers = async (req, res) => {
   try {
@@ -100,24 +100,13 @@ const sendFeedback = async (req, res) => {
       love: "💖 Love Note",
     };
 
-    const html = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; padding: 20px; background-color: #f9f9f9; border-radius: 10px; color: #333;">
-        <h2>${emojiMap[feedbackType] || "📝 Feedback"}</h2>
-        <p><strong>From:</strong> ${user.username} (${user.email})</p>
-        <p><strong>Type:</strong> ${feedbackType.toUpperCase()}</p>
-        <hr style="margin: 16px 0;" />
-        <p style="white-space: pre-line;">${message}</p>
-      </div>
-    `;
-
-    const mailOptions = {
-      from: `"${user.name}" <${user.email}>`,
-      to: process.env.FEEDBACK_RECEIVER,
-      subject: `${emojiMap[feedbackType] || "New Feedback"} from ${user.name}`,
-      html,
-    };
-
-    await transporter.sendMail(mailOptions);
+    await sendFeedbackEmail(
+      user.username,
+      user.email,
+      emojiMap[feedbackType],
+      feedbackType,
+      message
+    );
 
     res.status(200).json({ message: "Feedback sent successfully!" });
   } catch (error) {

@@ -10,6 +10,8 @@ function useDreamSocket(setDreams) {
   const socketRef = useRef(null);
 
   useEffect(() => {
+    if (socketRef.current) return;
+
     const connectSocket = async () => {
       let token = auth?.auth?.accessToken;
 
@@ -22,9 +24,10 @@ function useDreamSocket(setDreams) {
         }
       }
 
-      const PUBLIC_URL = window.location.origin;
+      // const PUBLIC_ORIGIN = window.location.origin;
+      const PUBLIC_ORIGIN = "http://localhost:8080";
 
-      socketRef.current = io(PUBLIC_URL, {
+      socketRef.current = io(PUBLIC_ORIGIN, {
         auth: { token },
         withCredentials: true,
         reconnectionAttempts: 3,
@@ -41,6 +44,13 @@ function useDreamSocket(setDreams) {
             console.error("Failed to refresh on socket error", refreshErr);
           }
         }
+      });
+
+      socketRef.current.on("dream-added", (newDream) => {
+        setDreams((prev) => {
+          if (prev.some((d) => d._id === newDream._id)) return prev;
+          return [newDream, ...prev];
+        });
       });
 
       socketRef.current.on("dream-updated", (updatedDream) => {
@@ -71,8 +81,9 @@ function useDreamSocket(setDreams) {
 
     return () => {
       socketRef.current?.disconnect();
+      socketRef.current = null;
     };
-  }, [auth?.accessToken]);
+  }, []);
 }
 
 export default useDreamSocket;

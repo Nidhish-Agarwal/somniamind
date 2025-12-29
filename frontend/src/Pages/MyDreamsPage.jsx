@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, Suspense, lazy } from "react";
 import DreamCard from "../components/Cards/DreamCard";
 import { useInView } from "react-intersection-observer";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -8,8 +8,10 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import useDreamSocket from "../hooks/useDreamSocket";
 import { useSearchContext } from "../context/SearchContext";
-import DreamForm from "../components/DreamForm";
 import { Plus } from "lucide-react";
+import OverlayLoader from "../components/loaders/OverlayLoader";
+
+const DreamForm = lazy(() => import("../components/DreamForm"));
 
 const MyDreamsPage = () => {
   const { filters } = useSearchContext();
@@ -186,7 +188,11 @@ const MyDreamsPage = () => {
           </Button>
         </div>
       )}
-      {formOpen && <DreamForm onClose={() => setFormOpen(false)} />}
+      {formOpen && (
+        <Suspense fallback={<OverlayLoader />}>
+          <DreamForm onClose={() => setFormOpen(false)} />
+        </Suspense>
+      )}
     </div>
   );
 };

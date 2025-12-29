@@ -1,41 +1,52 @@
 import "./App.css";
-import Unauthorized from "./Pages/Unauthorized";
-import NotFound from "./Pages/NotFound";
-import Dashboard from "./Pages/Dashboard";
+import { Toaster } from "sonner";
 import { Routes, Route, Navigate } from "react-router-dom";
+import { useEffect, lazy, Suspense } from "react";
+import { initGA } from "./analytics/ga";
+
 import PersistLogin from "./components/PersistLogin";
 import RequireAuth from "./components/RequireAuth";
 import MainLayout from "./layouts/MainLayout";
-import ProfilePage from "./Pages/ProfilePage";
-import MyDreamsPage from "./Pages/MyDreamsPage";
-import { Toaster } from "sonner";
-import CommunityPage from "./Pages/CommunityPage";
-import AllPostsPage from "./Pages/AllPostsPage";
-import MyPostsPage from "./Pages/MyPostsPage";
-import BookmarksPage from "./Pages/BookmarksPage";
-import HelpPage from "./Pages/HelpPage";
-import ResetPasswordPage from "./Pages/ResetPasswordPage";
 import { SentryErrorBoundary } from "./Pages/ErrorBoundary";
-import ForgotPasswordPage from "./Pages/ForgotPasswordPage";
-import { useEffect } from "react";
 import AnalyticsTracker from "./analytics/AnalyticsTracker";
-import { initGA } from "./analytics/ga";
-import LoginForm from "./auth/LoginForm";
-import SignupForm from "./auth/SignUpForm";
-// import DreamLandingPage from "./Pages/LandingPage2";
+
+// 🔹 Loaders
+import LoadingScreen from "./Pages/LoadingScreen";
+
+// 🔹 Lazy-loaded pages
+const LoginForm = lazy(() => import("./auth/LoginForm"));
+const SignupForm = lazy(() => import("./auth/SignUpForm"));
+
+const Unauthorized = lazy(() => import("./Pages/Unauthorized"));
+const NotFound = lazy(() => import("./Pages/NotFound"));
+
+const Dashboard = lazy(() => import("./Pages/Dashboard"));
+const ProfilePage = lazy(() => import("./Pages/ProfilePage"));
+const MyDreamsPage = lazy(() => import("./Pages/MyDreamsPage"));
+const CommunityPage = lazy(() => import("./Pages/CommunityPage"));
+const AllPostsPage = lazy(() => import("./Pages/AllPostsPage"));
+const MyPostsPage = lazy(() => import("./Pages/MyPostsPage"));
+const BookmarksPage = lazy(() => import("./Pages/BookmarksPage"));
+const HelpPage = lazy(() => import("./Pages/HelpPage"));
+
+const ForgotPasswordPage = lazy(() => import("./Pages/ForgotPasswordPage"));
+const ResetPasswordPage = lazy(() => import("./Pages/ResetPasswordPage"));
 
 function App() {
   useEffect(() => {
     initGA();
   }, []);
+
   return (
-    <>
-      <SentryErrorBoundary>
+    <SentryErrorBoundary>
+      {/* 🔹 Global Suspense */}
+      <Suspense fallback={<LoadingScreen />}>
         <Routes>
-          {/* <Route path="/" element={<DreamLandingPage />} /> */}
+          {/* 🔓 Public routes */}
           <Route path="/login" element={<LoginForm />} />
           <Route path="/signup" element={<SignupForm />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
+
           <Route
             path="/forgot-password"
             element={
@@ -45,6 +56,7 @@ function App() {
               </>
             }
           />
+
           <Route
             path="/reset-password"
             element={
@@ -55,8 +67,10 @@ function App() {
             }
           />
 
+          {/* 🔐 Protected routes */}
           <Route element={<PersistLogin />}>
             <Route element={<AnalyticsTracker />} />
+
             <Route element={<RequireAuth allowedRoles={[2001]} />}>
               <Route
                 path="/dashboard"
@@ -67,6 +81,7 @@ function App() {
                   </MainLayout>
                 }
               />
+
               <Route
                 path="/profile"
                 element={
@@ -76,6 +91,7 @@ function App() {
                   </MainLayout>
                 }
               />
+
               <Route
                 path="/mydreams"
                 element={
@@ -102,23 +118,23 @@ function App() {
               </Route>
             </Route>
 
+            {/* ℹ️ Help (still behind PersistLogin but outside RequireAuth) */}
             <Route
               path="/help"
               element={
                 <MainLayout>
                   <Toaster position="bottom-right" richColors />
                   <HelpPage />
-                  {/* here it i1Q2`1 `   */}
                 </MainLayout>
               }
             />
           </Route>
 
-          {/* 404 Page */}
+          {/* ❌ 404 */}
           <Route path="*" element={<NotFound />} />
         </Routes>
-      </SentryErrorBoundary>
-    </>
+      </Suspense>
+    </SentryErrorBoundary>
   );
 }
 

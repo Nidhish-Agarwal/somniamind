@@ -1,3 +1,4 @@
+import { useState, Suspense, lazy } from "react";
 import {
   Dialog,
   DialogTrigger,
@@ -17,18 +18,21 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import CommentSection from "./CommentSection";
-import DreamDetailsOverlay from "../overlays/DreamDetailOverlay";
 import HeartIcon from "../icons/HeartIcon";
 import BookmarkIcon from "../icons/BookmarkIcon";
-import NoImage from "../../assets/No-Image.png";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import useAuth from "../../hooks/useAuth";
-import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageSquare, ArrowRight, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import DreamPersonalityTypes from "../../data/DreamPersonalityTypes.json";
 import ROLES_LIST from "../../utils/roles";
+import LazyImage from "../LazyImage";
+import OverlayLoader from "../loaders/OverlayLoader";
+
+const DreamDetailsOverlay = lazy(() =>
+  import("../overlays/DreamDetailOverlay")
+);
 
 const formatDistanceToNow = (date) => {
   const now = new Date();
@@ -128,12 +132,14 @@ export default function PostOverlay({
   return (
     <Dialog open onOpenChange={onClose}>
       {openOverlay && (
-        <DreamDetailsOverlay
-          dream={dream}
-          setOpenOverlay={setOpenOverlay}
-          handleLike={handleLike}
-          liked={liked}
-        />
+        <Suspense fallback={<OverlayLoader />}>
+          <DreamDetailsOverlay
+            dream={dream}
+            setOpenOverlay={setOpenOverlay}
+            handleLike={handleLike}
+            liked={liked}
+          />
+        </Suspense>
       )}
 
       <DialogContent className="max-w-4xl max-h-[95vh] overflow-auto rounded-2xl bg-white dark:bg-zinc-900 p-0 border-0 shadow-2xl">
@@ -252,9 +258,9 @@ export default function PostOverlay({
 
               {/* Dream Image */}
               <div className="relative bg-black flex items-center justify-center max-h-[50vh] lg:max-h-[60vh] overflow-hidden">
-                <img
-                  src={dream.analysis?.image_url || NoImage}
-                  alt="Dream visualization"
+                <LazyImage
+                  src={dream.analysis?.image_url}
+                  alt="Dream Visualization"
                   className="w-full h-auto max-h-[50vh] lg:max-h-[60vh] object-contain"
                 />
               </div>

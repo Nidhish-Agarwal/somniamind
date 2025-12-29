@@ -51,8 +51,6 @@ const processImageJob = async (
 
     const imageUrl = await generateGeminiImageAndUpload(prompt, dreamId);
 
-    console.log("Generated and uploaded image:", imageUrl);
-
     if (imageUrl.success === false) {
       throw new Error(imageUrl.error || "Unknown error during image upload");
     }
