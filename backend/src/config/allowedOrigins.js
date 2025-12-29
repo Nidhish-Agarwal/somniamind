@@ -1,5 +1,5 @@
 require("dotenv").config();
 
-const allowedOrigins = [process.env.PUBLIC_ORIGIN, "http://localhost:5173"];
+const allowedOrigins = [process.env.PUBLIC_ORIGIN];
 
 module.exports = allowedOrigins;
