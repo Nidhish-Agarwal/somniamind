@@ -24,8 +24,7 @@ function useDreamSocket(setDreams) {
         }
       }
 
-      // const PUBLIC_ORIGIN = window.location.origin;
-      const PUBLIC_ORIGIN = "http://localhost:8080";
+      const PUBLIC_ORIGIN = window.location.origin;
 
       socketRef.current = io(PUBLIC_ORIGIN, {
         auth: { token },
