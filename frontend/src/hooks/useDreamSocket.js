@@ -5,6 +5,7 @@ import useRefreshToken from "./useRefreshToken";
 import { isTokenExpiringSoon } from "../utils/isTokenExpiringSoon";
 
 function useDreamSocket(setDreams) {
+  console.log("Running useDreamSocket");
   const { auth } = useAuth();
   const refresh = useRefreshToken();
   const socketRef = useRef(null);
@@ -13,7 +14,8 @@ function useDreamSocket(setDreams) {
     if (socketRef.current) return;
 
     const connectSocket = async () => {
-      let token = auth?.auth?.accessToken;
+      let token = auth?.accessToken;
+      console.log("Here is the access Token", token);
 
       if (!token || isTokenExpiringSoon(token)) {
         try {
@@ -25,6 +27,7 @@ function useDreamSocket(setDreams) {
       }
 
       const PUBLIC_ORIGIN = window.location.origin;
+      console.log("This is the public origin", PUBLIC_ORIGIN);
 
       socketRef.current = io(PUBLIC_ORIGIN, {
         auth: { token },

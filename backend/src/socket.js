@@ -8,6 +8,7 @@ const allowedOrigins = require("./config/allowedOrigins.js");
 let io;
 
 module.exports = (server) => {
+  console.log("Allowed origins for socket", allowedOrigins);
   io = new Server(server, {
     cors: {
       origin: allowedOrigins,
@@ -15,8 +16,11 @@ module.exports = (server) => {
     },
   });
 
+  console.log("This is the socket io:", io);
+
   io.on("connection", (socket) => {
     const token = socket.handshake.auth?.token;
+    console.log("Trying socket connection in backend", token);
 
     if (!token) {
       console.log("No token provided in socket connection");
@@ -33,14 +37,10 @@ module.exports = (server) => {
       // Join user-specific room (useful for sending events only to this user)
       socket.join(socket.userId);
 
-      // Example event listeners - you can extend these
-      socket.on("some-event", (data) => {
-        console.log(`Received some-event from user ${socket.userId}`, data);
-        // do something with data
-      });
-
       socket.on("disconnect", (reason) => {
-        console.log(`Client disconnected: ${socket.id}, reason: ${reason}`);
+        console.log(
+          `Client disconnected: userID:${socket.userId} - socketId:${socket.id}, reason: ${reason}`
+        );
       });
     } catch (err) {
       console.log("Socket auth failed:", err.message);
