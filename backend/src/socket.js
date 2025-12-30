@@ -8,7 +8,6 @@ const allowedOrigins = require("./config/allowedOrigins.js");
 let io;
 
 module.exports = (server) => {
-  console.log("Allowed origins for socket", allowedOrigins);
   io = new Server(server, {
     cors: {
       origin: allowedOrigins,
@@ -16,11 +15,8 @@ module.exports = (server) => {
     },
   });
 
-  console.log("This is the socket io:", io);
-
   io.on("connection", (socket) => {
     const token = socket.handshake.auth?.token;
-    console.log("Trying socket connection in backend", token);
 
     if (!token) {
       console.log("No token provided in socket connection");

@@ -101,9 +101,17 @@ export default function DreamDetailsOverlay({
     trackEvent("Engagement", {
       source: "Dream",
       event: "Viewed Analysis",
-      postId: dream._id,
+      dreamId: dream._id,
     });
   }, [dream._id]);
+
+  useEffect(() => {
+    trackEvent("Image Generation", {
+      source: "Dream",
+      event: dream.analysis?.image_status,
+      dreamId: dream._id,
+    });
+  }, [dream.analysis?.image_status, dream._id]);
 
   const intensityPercent = Math.min(Math.max(dream.intensity, 0), 100);
 

@@ -50,10 +50,8 @@ const DreamCard = ({ dream, onRetry, updateDream }) => {
     e.stopPropagation();
     setIsRetrying(true);
     try {
-      trackEvent("Dream Analysis", { status: "retrying", dreamId: dream._id });
       await onRetry(dream._id);
     } finally {
-      trackEvent("Dream Analysis", { status: "failed", dreamId: dream._id });
       setIsRetrying(false);
     }
   };
@@ -93,6 +91,13 @@ const DreamCard = ({ dream, onRetry, updateDream }) => {
   }, [openOverlay]);
 
   const { title, description, date, analysis_status, retry_count = 0 } = dream;
+
+  useEffect(() => {
+    trackEvent("Dream Analysis", {
+      status: analysis_status,
+      dreamId: dream._id,
+    });
+  }, [analysis_status, dream._id]);
 
   return (
     <>
