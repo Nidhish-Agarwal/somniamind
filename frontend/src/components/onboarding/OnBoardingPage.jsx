@@ -15,8 +15,8 @@ import ReflectionOutputPage from "./steps/ReflectionOutputPage";
    🔑 STEP REGISTRY — add new steps here only
 --------------------------------------------- */
 const STEPS = [
-  // { id: "welcome", component: WelcomeOverlay },
-  // { id: "meaning", component: MeaningPrimer },
+  { id: "welcome", component: WelcomeOverlay },
+  { id: "meaning", component: MeaningPrimer },
   { id: "recall", component: DreamRecallScreen },
   { id: "input", component: DreamInputScreen },
   { id: "reflection", component: ReflectionOutputPage },
