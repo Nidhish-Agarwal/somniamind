@@ -156,4 +156,4 @@ SomniaMind is designed to bridge the gap between subjective dream experiences an
 
 ### Application Deployment Link:
 
-https://somniamind.fly.dev
+https://somniamind.com
